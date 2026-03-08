@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import TABLES from '../data/tables';
 
-export default function WalkInModal({ onAdd, onClose }) {
+export default function WalkInModal({ tables, onAdd, onClose }) {
   const [name, setName] = useState('');
-  const [tableId, setTableId] = useState(TABLES[0].id);
+  const [tableId, setTableId] = useState(tables[0].id);
 
   const handleAdd = () => {
     if (!name.trim()) return;
@@ -38,7 +37,7 @@ export default function WalkInModal({ onAdd, onClose }) {
           value={tableId}
           onChange={(e) => setTableId(e.target.value)}
         >
-          {TABLES.map((t) => (
+          {tables.map((t) => (
             <option key={t.id} value={t.id}>
               {t.name} — {t.label}
             </option>

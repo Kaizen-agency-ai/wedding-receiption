@@ -41,7 +41,7 @@ export default function App() {
   const [walkInOpen, setWalkInOpen]   = useState(false);
   const [toasts, setToasts]           = useState([]);
 
-  const { guests, stats, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests } = useGuests();
+  const { guests, stats, tables, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable } = useGuests();
 
   const angBaoGuest = angBaoGuestId !== null
     ? guests.find((g) => g.id === angBaoGuestId) ?? null
@@ -127,11 +127,13 @@ export default function App() {
       {activeTab === 'checklist' && (
         <ChecklistPage
           guests={guests}
+          tables={tables}
           onToggleCheckIn={handleToggleCheckIn}
           onOpenAngBao={setAngBaoGuestId}
           onAddWalkIn={() => setWalkInOpen(true)}
           onRenameGuest={renameGuest}
           onMoveGuest={moveGuest}
+          onRenameTable={renameTable}
         />
       )}
 
@@ -146,6 +148,7 @@ export default function App() {
 
       {walkInOpen && (
         <WalkInModal
+          tables={tables}
           onAdd={addWalkIn}
           onClose={() => setWalkInOpen(false)}
         />

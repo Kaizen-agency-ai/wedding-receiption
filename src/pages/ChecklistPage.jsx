@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef } from 'react';
-import TABLES from '../data/tables';
 import WEDDING_CONFIG from '../data/config';
 import { SearchIcon, AngBaoIcon, CheckIcon } from '../components/Icons';
 
@@ -10,19 +9,23 @@ const formatCurrency = (n) =>
     minimumFractionDigits: 0,
   });
 
-export default function ChecklistPage({ guests, onToggleCheckIn, onOpenAngBao, onAddWalkIn, onRenameGuest, onMoveGuest }) {
+export default function ChecklistPage({ guests, tables, onToggleCheckIn, onOpenAngBao, onAddWalkIn, onRenameGuest, onMoveGuest, onRenameTable }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); // all | checked | unchecked
 
-  // Inline editing state
+  // Inline guest editing state
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [editTable, setEditTable] = useState(null);
   const nameInputRef = useRef(null);
 
+  // Inline table label editing state
+  const [editingTableId, setEditingTableId] = useState(null);
+  const [editTableLabel, setEditTableLabel] = useState('');
+
   // Expand all by default; collapse only when no search
   const [expandedTables, setExpandedTables] = useState(
-    new Set(TABLES.map((t) => t.id))
+    new Set(tables.map((t) => t.id))
   );
 
   const toggleExpand = (id) => {
@@ -33,11 +36,31 @@ export default function ChecklistPage({ guests, onToggleCheckIn, onOpenAngBao, o
     });
   };
 
+  // Table label editing handlers
+  const startTableEdit = (id, label, e) => {
+    e.stopPropagation();
+    setEditingTableId(id);
+    setEditTableLabel(label);
+  };
+
+  const saveTableLabel = () => {
+    if (editingTableId === null) return;
+    onRenameTable(editingTableId, editTableLabel.trim() || 'Unlabelled');
+    setEditingTableId(null);
+  };
+
+  const cancelTableEdit = () => setEditingTableId(null);
+
+  const handleTableLabelKeyDown = (e) => {
+    if (e.key === 'Enter') saveTableLabel();
+    if (e.key === 'Escape') cancelTableEdit();
+  };
+
   // Build the set of table IDs present in guests (includes walk-in tables)
   const allTableIds = useMemo(() => {
     const ids = new Set(guests.map((g) => g.table));
-    return TABLES.filter((t) => ids.has(t.id));
-  }, [guests]);
+    return tables.filter((t) => ids.has(t.id));
+  }, [guests, tables]);
 
   const filteredTables = useMemo(() => {
     return allTableIds.map((t) => {
@@ -116,7 +139,27 @@ export default function ChecklistPage({ guests, onToggleCheckIn, onOpenAngBao, o
           <div key={t.id} className="table-group">
             <div className="table-group-header" onClick={() => toggleExpand(t.id)}>
               <span className="table-group-title">
-                {t.name} — {t.label}
+                {t.name} —{' '}
+                {editingTableId === t.id ? (
+                  <input
+                    className="table-label-input"
+                    value={editTableLabel}
+                    onChange={(e) => setEditTableLabel(e.target.value)}
+                    onKeyDown={handleTableLabelKeyDown}
+                    onBlur={saveTableLabel}
+                    onClick={(e) => e.stopPropagation()}
+                    autoFocus
+                  />
+                ) : (
+                  <span
+                    className="table-label-text"
+                    onClick={(e) => startTableEdit(t.id, t.label, e)}
+                    title="Click to rename"
+                  >
+                    {t.label}
+                    <span className="table-label-edit-hint">✎</span>
+                  </span>
+                )}
                 <span style={{ fontSize: 13, fontFamily: "'DM Sans', sans-serif", fontWeight: 500, marginLeft: 12, color: '#5A4F47' }}>
                   {isExpanded ? '▾' : '▸'}
                 </span>
@@ -147,7 +190,7 @@ export default function ChecklistPage({ guests, onToggleCheckIn, onOpenAngBao, o
                           value={editTable}
                           onChange={(e) => setEditTable(Number(e.target.value))}
                         >
-                          {TABLES.map((tbl) => (
+                          {tables.map((tbl) => (
                             <option key={tbl.id} value={tbl.id}>
                               {tbl.name} — {tbl.label}
                             </option>

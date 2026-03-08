@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react';
-import TABLES from '../data/tables';
+import INITIAL_TABLES from '../data/tables';
 import INITIAL_GUESTS from '../data/guests';
 
 const STORAGE_KEY = 'wedding_guests_v2';
+const TABLES_STORAGE_KEY = 'wedding_tables_v1';
 
 /**
  * Central state hook for all guest and table operations.
@@ -17,10 +18,22 @@ export default function useGuests() {
     return INITIAL_GUESTS;
   });
 
+  const [tables, setTables] = useState(() => {
+    try {
+      const saved = localStorage.getItem(TABLES_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return INITIAL_TABLES;
+  });
+
   // Auto-persist on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
   }, [guests]);
+
+  useEffect(() => {
+    localStorage.setItem(TABLES_STORAGE_KEY, JSON.stringify(tables));
+  }, [tables]);
 
   // ── Mutations ──
 
@@ -69,6 +82,12 @@ export default function useGuests() {
     );
   };
 
+  const renameTable = (id, newLabel) => {
+    setTables((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, label: newLabel } : t))
+    );
+  };
+
   const resetGuests = () => {
     setGuests(INITIAL_GUESTS);
   };
@@ -82,7 +101,7 @@ export default function useGuests() {
     const angBaoCount = guests.filter((g) => g.angBao).length;
     const angBaoTotal = guests.reduce((s, g) => s + (g.angBaoAmt || 0), 0);
 
-    const tableStats = TABLES.map((t) => {
+    const tableStats = tables.map((t) => {
       const tGuests = guests.filter((g) => g.table === t.id);
       const tChecked = tGuests.filter((g) => g.checkedIn).length;
       return { ...t, guests: tGuests.length, checkedIn: tChecked };
@@ -93,7 +112,7 @@ export default function useGuests() {
     ).length;
 
     return { total, checkedIn, pct, angBaoCount, angBaoTotal, tableStats, fullTables };
-  }, [guests]);
+  }, [guests, tables]);
 
-  return { guests, stats, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests };
+  return { guests, stats, tables, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable };
 }

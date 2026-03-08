@@ -42,12 +42,15 @@ body {
   background: var(--cream);
   font-family: 'DM Sans', sans-serif;
   color: var(--charcoal);
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 /* ══════════════════════════════════════
@@ -454,6 +457,55 @@ body {
   border-radius: 99px;
 }
 
+/* Editable table label */
+.table-label-text {
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin-left: -4px;
+  transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.table-label-text:hover {
+  background: var(--gold-glow);
+}
+
+.table-label-edit-hint {
+  font-size: 11px;
+  color: var(--gold);
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+}
+
+.table-label-text:hover .table-label-edit-hint {
+  opacity: 1;
+}
+
+.table-label-input {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--charcoal);
+  background: var(--white);
+  border: 1.5px solid var(--gold-light);
+  border-radius: 6px;
+  padding: 2px 8px;
+  outline: none;
+  min-width: clamp(80px, 35vw, 160px);
+  max-width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.table-label-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--gold-glow);
+}
+
 /* Guest rows */
 .guest-row {
   display: flex;
@@ -685,7 +737,7 @@ body {
   background: var(--white);
   border-radius: var(--radius);
   padding: 32px;
-  width: 360px;
+  width: min(360px, calc(100vw - 32px));
   box-shadow: 0 20px 60px rgba(44, 36, 32, 0.2);
   animation: slideUp 0.3s;
 }
@@ -1123,6 +1175,57 @@ body {
   .stats-row  { grid-template-columns: 1fr; }
   .floor-plan { grid-template-columns: repeat(2, 1fr); }
   .nav-tab    { padding: 8px 4px 10px; }
+
+  /* Topbar: hide subtitle, shrink heading */
+  .topbar-couple { display: none; }
+  .topbar h1     { font-size: 17px; letter-spacing: 0.5px; }
+
+  /* Table accordion: tighter padding, smaller title */
+  .table-group-header { padding: 12px 16px; flex-wrap: wrap; gap: 4px; }
+  .table-group-title  { font-size: 15px; }
+
+  /* Guest rows: tighter padding */
+  .guest-row   { padding: 10px 16px; }
+  .ang-bao-tag { margin-right: 10px; padding: 3px 8px; font-size: 11px; }
+
+  /* Toast: allow text to wrap, prevent viewport bleed */
+  .toast-container { width: calc(100% - 32px); left: 50%; }
+  .toast           { white-space: normal; flex-wrap: wrap; max-width: 100%; }
+
+  /* Floor plan wrapper: less padding on mobile */
+  .floorplan-svg-wrap { padding: 16px; }
+
+  /* Guest inline-edit: stack on small screens */
+  .guest-edit-group   { flex-wrap: wrap; }
+  .guest-table-select { max-width: 100%; }
+}
+
+/* ── Very small phones (≤ 375 px) ───────
+   Target: iPhone SE, Galaxy A series, etc.
+   ══════════════════════════════════════ */
+@media (max-width: 375px) {
+  /* Topbar: shrink further */
+  .topbar    { padding: 8px 12px; }
+  .topbar h1 { font-size: 14px; letter-spacing: 0; }
+
+  /* Table group accordion */
+  .table-group-header { padding: 8px 12px; }
+  .table-group-title  { font-size: 13px; }
+  .table-group-count  { font-size: 11px; padding: 3px 8px; }
+
+  /* Guest rows */
+  .guest-row   { padding: 8px 12px; }
+  .guest-index { width: 24px; }
+
+  /* Controls */
+  .filter-btn           { padding: 8px 12px; font-size: 12px; }
+  .checklist-action-btn { padding: 8px 10px; font-size: 12px; }
+
+  /* Modal: tighter inner padding */
+  .modal { padding: 24px 16px; }
+
+  /* Stat / table cards: single column */
+  .floor-plan { grid-template-columns: 1fr; }
 }
 
 /* ══════════════════════════════════════
