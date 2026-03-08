@@ -11,6 +11,17 @@ const formatCurrency = (n) =>
 export default function DashboardPage({ stats }) {
   return (
     <div className="page">
+      {/* Hero Banner */}
+      <div className="hero-banner">
+        <img src="/hero.jpeg" alt="Steven & Candy" className="hero-img" />
+        <div className="hero-overlay" />
+        <div className="hero-text">
+          <span className="hero-label">感谢您的祝福与回覆，期待与您相见</span>
+          <h2 className="hero-names">Steven &amp; Candy — 志健 &amp; 姿吟</h2>
+          <span className="hero-date">25 · 10 · 2026</span>
+        </div>
+      </div>
+
       {/* Attendance Bar */}
       <div className="att-bar-wrap">
         <div className="att-bar-header">
