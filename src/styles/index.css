@@ -1326,7 +1326,7 @@ body {
   /* Shift toast above bottom nav */
   .toast-container { bottom: 76px; }
 
-  .stats-row  { grid-template-columns: 1fr; }
+  .stats-row  { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .floor-plan { grid-template-columns: repeat(2, 1fr); }
   .nav-tab    { padding: 8px 4px 10px; }
 
