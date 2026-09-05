@@ -1,4 +1,3 @@
-import TABLES from '../data/tables';
 import WEDDING_CONFIG from '../data/config';
 
 const formatCurrency = (n) =>
@@ -46,7 +45,7 @@ export default function DashboardPage({ stats }) {
         <div className="stat-card sage">
           <span className="stat-label">Tables Full<span className="zh-sub">满座桌数</span></span>
           <span className="stat-value">{stats.fullTables}</span>
-          <span className="stat-sub">of {TABLES.length} tables</span>
+          <span className="stat-sub">of {stats.tableStats.length} tables</span>
         </div>
         <div className="stat-card rose">
           <span className="stat-label">Ang Bao Received<span className="zh-sub">红包收到</span></span>

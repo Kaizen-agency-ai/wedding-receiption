@@ -1,4 +1,11 @@
 /**
+ * NOT USED AT RUNTIME. The app now reads/writes tables live from Supabase
+ * (see src/hooks/useGuests.js) so every device stays in sync in real time.
+ * This file is kept only as a human-readable reference for the table
+ * layout — it's what supabase_migration.sql's seed data was generated
+ * from. To add/rename/remove a table for real, edit it in Supabase
+ * (SQL Editor or Table Editor), not here.
+ *
  * Table configuration for the wedding reception.
  * Each table has an id, display name, seat capacity, and descriptive label.
  *
@@ -8,7 +15,6 @@
  * and Reserve last so both the Dashboard and Guest Checklist surface them at
  * the top and bottom of the table list.
  *
- * To customise for your event, edit the entries below.
  * The `id` must be unique and is used as the foreign key in the guest list.
  */
 const TABLES = [

@@ -1,6 +1,11 @@
 import TABLES from './tables';
 
 /**
+ * NOT USED AT RUNTIME. Guest data now lives in Supabase and syncs across
+ * devices in real time (see src/hooks/useGuests.js). This file is kept only
+ * because it's what supabase_migration.sql's seed data was generated from —
+ * it is not imported by the app anymore.
+ *
  * Initial guest list for the wedding reception.
  *
  * Each guest record:

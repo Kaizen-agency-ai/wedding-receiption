@@ -41,7 +41,7 @@ export default function App() {
   const [walkInOpen, setWalkInOpen]   = useState(false);
   const [toasts, setToasts]           = useState([]);
 
-  const { guests, stats, tables, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable } = useGuests();
+  const { guests, stats, tables, loading, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable } = useGuests();
 
   const angBaoGuest = angBaoGuestId !== null
     ? guests.find((g) => g.id === angBaoGuestId) ?? null
@@ -89,6 +89,15 @@ export default function App() {
       setToasts([]);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="app">
+        <TopBar onExportCSV={exportCSV} onResetData={handleReset} />
+        <div className="loading-state">Loading live guest data…</div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

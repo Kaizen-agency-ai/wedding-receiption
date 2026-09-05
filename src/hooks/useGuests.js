@@ -1,100 +1,157 @@
 import { useState, useMemo, useEffect } from 'react';
-import INITIAL_TABLES from '../data/tables';
-import INITIAL_GUESTS from '../data/guests';
-
-const STORAGE_KEY = 'wedding_guests_v2';
-const TABLES_STORAGE_KEY = 'wedding_tables_v1';
+import { supabase } from '../lib/supabaseClient';
 
 /**
  * Central state hook for all guest and table operations.
- * Persists to localStorage automatically.
+ *
+ * Backed by Supabase (Postgres + Realtime) instead of localStorage: every
+ * mutation writes straight to the database, and a realtime subscription on
+ * both tables pushes every INSERT/UPDATE/DELETE — including the writer's
+ * own — back down to all connected clients within milliseconds. There is
+ * no local optimistic state; the UI always reflects what's actually in the
+ * database, so every device agrees.
  */
+
+// DB rows use snake_case; the rest of the app expects the camelCase shape
+// the original localStorage version used, so map at the boundary.
+const mapGuest = (row) => ({
+  id: row.id,
+  name: row.name,
+  table: row.table_id,
+  checkedIn: row.checked_in,
+  angBao: row.ang_bao,
+  angBaoAmt: row.ang_bao_amt,
+  walkIn: row.walk_in,
+});
+
+const mapTable = (row) => ({
+  id: row.id,
+  name: row.name,
+  capacity: row.capacity,
+  label: row.label,
+});
+
 export default function useGuests() {
-  const [guests, setGuests] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_GUESTS;
-  });
+  const [guests, setGuests] = useState([]);
+  const [tables, setTables] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [tables, setTables] = useState(() => {
-    try {
-      const saved = localStorage.getItem(TABLES_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return INITIAL_TABLES;
-  });
-
-  // Auto-persist on every change
+  // ── Initial fetch + realtime subscription ──
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(guests));
-  }, [guests]);
+    let cancelled = false;
 
-  useEffect(() => {
-    localStorage.setItem(TABLES_STORAGE_KEY, JSON.stringify(tables));
-  }, [tables]);
+    async function load() {
+      const [{ data: tableRows, error: tErr }, { data: guestRows, error: gErr }] = await Promise.all([
+        supabase.from('tables').select('*').order('sort_order', { ascending: true }),
+        supabase.from('guests').select('*').order('id', { ascending: true }),
+      ]);
+      if (cancelled) return;
+      if (tErr) console.error('Failed to load tables:', tErr);
+      if (gErr) console.error('Failed to load guests:', gErr);
+      setTables((tableRows ?? []).map(mapTable));
+      setGuests((guestRows ?? []).map(mapGuest));
+      setLoading(false);
+    }
+    load();
+
+    const channel = supabase
+      .channel('db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'guests' }, (payload) => {
+        setGuests((prev) => {
+          if (payload.eventType === 'INSERT') {
+            if (prev.some((g) => g.id === payload.new.id)) return prev; // already present
+            return [...prev, mapGuest(payload.new)];
+          }
+          if (payload.eventType === 'UPDATE') {
+            return prev.map((g) => (g.id === payload.new.id ? mapGuest(payload.new) : g));
+          }
+          if (payload.eventType === 'DELETE') {
+            return prev.filter((g) => g.id !== payload.old.id);
+          }
+          return prev;
+        });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tables' }, (payload) => {
+        setTables((prev) => {
+          if (payload.eventType === 'INSERT') {
+            if (prev.some((t) => t.id === payload.new.id)) return prev;
+            return [...prev, mapTable(payload.new)];
+          }
+          if (payload.eventType === 'UPDATE') {
+            return prev.map((t) => (t.id === payload.new.id ? mapTable(payload.new) : t));
+          }
+          if (payload.eventType === 'DELETE') {
+            return prev.filter((t) => t.id !== payload.old.id);
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // ── Mutations ──
+  // Each of these only writes to Supabase — local state updates arrive via
+  // the realtime subscription above, on this device and every other one.
 
-  const toggleCheckIn = (id) => {
-    setGuests((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, checkedIn: !g.checkedIn } : g))
-    );
+  const toggleCheckIn = async (id) => {
+    const guest = guests.find((g) => g.id === id);
+    if (!guest) return;
+    const { error } = await supabase
+      .from('guests')
+      .update({ checked_in: !guest.checkedIn })
+      .eq('id', id);
+    if (error) console.error('toggleCheckIn failed:', error);
   };
 
-  const setAngBao = (id, amount) => {
+  const setAngBao = async (id, amount) => {
     const amt = parseFloat(amount) || 0;
-    setGuests((prev) =>
-      prev.map((g) =>
-        g.id === id
-          ? { ...g, angBao: amt > 0, angBaoAmt: amt > 0 ? amt : null }
-          : g
-      )
-    );
+    const { error } = await supabase
+      .from('guests')
+      .update({ ang_bao: amt > 0, ang_bao_amt: amt > 0 ? amt : null })
+      .eq('id', id);
+    if (error) console.error('setAngBao failed:', error);
   };
 
-  const addWalkIn = (name, tableId) => {
-    const newId = Date.now();
-    setGuests((prev) => [
-      ...prev,
-      {
-        id: newId,
-        name: name.trim(),
-        table: tableId,
-        checkedIn: false,
-        angBao: false,
-        angBaoAmt: null,
-        walkIn: true,
-      },
+  const addWalkIn = async (name, tableId) => {
+    const { error } = await supabase
+      .from('guests')
+      .insert({ name: name.trim(), table_id: tableId, walk_in: true });
+    if (error) console.error('addWalkIn failed:', error);
+  };
+
+  const renameGuest = async (id, newName) => {
+    const { error } = await supabase.from('guests').update({ name: newName }).eq('id', id);
+    if (error) console.error('renameGuest failed:', error);
+  };
+
+  const moveGuest = async (id, newTableId) => {
+    const { error } = await supabase.from('guests').update({ table_id: newTableId }).eq('id', id);
+    if (error) console.error('moveGuest failed:', error);
+  };
+
+  const renameTable = async (id, newLabel) => {
+    const { error } = await supabase.from('tables').update({ label: newLabel }).eq('id', id);
+    if (error) console.error('renameTable failed:', error);
+  };
+
+  const resetGuests = async () => {
+    // Remove walk-ins entirely (they didn't exist in the original seed) and
+    // blank out the rest — same "back to a clean slate" behaviour as before,
+    // just as two SQL statements instead of a full table re-seed.
+    const [{ error: delErr }, { error: updErr }] = await Promise.all([
+      supabase.from('guests').delete().eq('walk_in', true),
+      supabase
+        .from('guests')
+        .update({ name: '', checked_in: false, ang_bao: false, ang_bao_amt: null })
+        .eq('walk_in', false),
     ]);
-  };
-
-  const renameGuest = (id, newName) => {
-    setGuests((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, name: newName } : g))
-    );
-  };
-
-  const moveGuest = (id, newTableId) => {
-    setGuests((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, table: newTableId } : g))
-    );
-  };
-
-  const renameTable = (id, newLabel) => {
-    setTables((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, label: newLabel } : t))
-    );
-  };
-
-  const resetGuests = () => {
-    setGuests(INITIAL_GUESTS);
-    // Also reset the table list — otherwise a table layout saved to
-    // localStorage from a previous version of tables.js (e.g. before a
-    // seating-chart update) stays stuck forever and no longer matches the
-    // guests we just regenerated from the current TABLES.
-    setTables(INITIAL_TABLES);
+    if (delErr) console.error('resetGuests (delete walk-ins) failed:', delErr);
+    if (updErr) console.error('resetGuests (reset seats) failed:', updErr);
   };
 
   // ── Derived Stats ──
@@ -119,5 +176,5 @@ export default function useGuests() {
     return { total, checkedIn, pct, angBaoCount, angBaoTotal, tableStats, fullTables };
   }, [guests, tables]);
 
-  return { guests, stats, tables, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable };
+  return { guests, stats, tables, loading, toggleCheckIn, setAngBao, addWalkIn, renameGuest, moveGuest, resetGuests, renameTable };
 }
