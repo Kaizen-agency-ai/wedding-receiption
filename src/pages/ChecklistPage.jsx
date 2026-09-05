@@ -188,7 +188,14 @@ export default function ChecklistPage({ guests, tables, onToggleCheckIn, onOpenA
                         <select
                           className="guest-table-select"
                           value={editTable}
-                          onChange={(e) => setEditTable(Number(e.target.value))}
+                          onChange={(e) => {
+                            // Option values are always strings in the DOM, but
+                            // table.id may be a number or a string (e.g. 'VIP',
+                            // '3A') — look up the real id so the type matches
+                            // what's stored on the guest record.
+                            const match = tables.find((tbl) => String(tbl.id) === e.target.value);
+                            setEditTable(match ? match.id : e.target.value);
+                          }}
                         >
                           {tables.map((tbl) => (
                             <option key={tbl.id} value={tbl.id}>
