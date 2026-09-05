@@ -90,6 +90,11 @@ export default function useGuests() {
 
   const resetGuests = () => {
     setGuests(INITIAL_GUESTS);
+    // Also reset the table list — otherwise a table layout saved to
+    // localStorage from a previous version of tables.js (e.g. before a
+    // seating-chart update) stays stuck forever and no longer matches the
+    // guests we just regenerated from the current TABLES.
+    setTables(INITIAL_TABLES);
   };
 
   // ── Derived Stats ──
