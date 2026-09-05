@@ -97,6 +97,67 @@ body {
   opacity: 0.6;
 }
 
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Overflow menu — hidden on desktop, where .nav-actions already
+   shows Export CSV / Reset Data directly in the nav bar */
+.topbar-menu { position: relative; display: none; }
+
+.topbar-menu-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--gold-pale);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.topbar-menu-btn:hover,
+.topbar-menu-btn[aria-expanded="true"] {
+  background: rgba(212, 168, 67, 0.15);
+}
+
+.topbar-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 160px;
+  background: var(--white);
+  border: 1px solid var(--cream-dark);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(44, 36, 32, 0.18);
+  overflow: hidden;
+  z-index: 300;
+}
+
+.topbar-menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--charcoal-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.topbar-menu-item:hover { background: var(--cream); }
+.topbar-menu-item.danger { color: var(--rose); }
+.topbar-menu-item.danger:hover { background: var(--rose-light); }
+
 /* ══════════════════════════════════════
    NAVIGATION TABS
    ══════════════════════════════════════ */
@@ -1255,6 +1316,8 @@ body {
   .nav-actions {
     display: none; /* show only on larger screens */
   }
+
+  .topbar-menu { display: block; } /* replaces .nav-actions on mobile */
 
   /* Pad page content so bottom nav doesn't overlap */
   .page,

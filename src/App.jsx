@@ -92,7 +92,7 @@ export default function App() {
 
   return (
     <div className="app">
-      <TopBar />
+      <TopBar onExportCSV={exportCSV} onResetData={handleReset} />
 
       {/* Navigation */}
       <div className="nav">
