@@ -52,7 +52,7 @@ const TABLE_POSITIONS = {
   21:   { x: 640, y: ROWS[2] },
   22:   { x: 640, y: ROWS[3] },
   23:   { x: 640, y: ROWS[4] },
-  24:   { x: 640, y: ROWS[5] },
+  '23A': { x: 640, y: ROWS[5] },
   25:   { x: 640, y: ROWS[6] },
 
   // Column 5 — right outer (starts one row down, then continues into 31-33)

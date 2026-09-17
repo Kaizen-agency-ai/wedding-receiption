@@ -45,7 +45,7 @@ const TABLES = [
   { id: 21,    name: 'Table 21',   capacity: 10, label: '' },
   { id: 22,    name: 'Table 22',   capacity: 10, label: '' },
   { id: 23,    name: 'Table 23',   capacity: 10, label: '' },
-  { id: 24,    name: 'Table 24',   capacity: 10, label: '' },
+  { id: '23A', name: 'Table 23A',  capacity: 10, label: '' },
   { id: 25,    name: 'Table 25',   capacity: 10, label: '' },
 
   { id: 26,    name: 'Table 26',   capacity: 10, label: '' },
