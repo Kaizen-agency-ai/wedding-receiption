@@ -57,7 +57,7 @@ const TABLES = [
   { id: 31,    name: 'Table 31',   capacity: 10, label: '' },
   { id: 32,    name: 'Table 32',   capacity: 10, label: '' },
   { id: 33,    name: 'Table 33',   capacity: 10, label: '' },
-  { id: '33A', name: 'Table 33A',  capacity: 10, label: '' },
+  { id: '33A', name: 'Table 33A',  capacity: 10, label: 'HALAL' },
 
   { id: 'R',   name: 'Reserve',    capacity: 10, label: 'Reserve Table' },
 ];

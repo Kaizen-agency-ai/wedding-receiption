@@ -213,6 +213,11 @@ export default function FloorPlanSVG({ tableStats }) {
               {isFull && <circle cx={pos.x} cy={pos.y} r={radius + 4} fill="none" stroke="#A84448" strokeWidth="1" opacity="0.15" />}
               <text x={pos.x} y={pos.y - 5} textAnchor="middle" fontFamily="DM Sans, sans-serif" fontSize="8.5" fontWeight="700" fill={c.text} letterSpacing="0.8">TABLE</text>
               <text x={pos.x} y={pos.y + 13} textAnchor="middle" fontFamily="Cormorant Garamond, serif" fontSize={isVIP ? 20 : 18} fontWeight="700" fill={c.text}>{ts.id}</text>
+              {ts.label && (
+                <text x={pos.x} y={pos.y + radius + 18} textAnchor="middle" fontFamily="DM Sans, sans-serif" fontSize="9" fontWeight="600" fill="#2C2420" letterSpacing="1.2">
+                  {ts.label}
+                </text>
+              )}
               <rect x={badgeX} y={badgeY} width={32} height={18} rx={9} fill={isFull ? '#A84448' : ts.checkedIn > 0 ? '#B8860B' : '#E8DFD0'} />
               <text x={badgeX + 16} y={badgeY + 12} textAnchor="middle" fontFamily="DM Sans, sans-serif" fontSize="8.5" fontWeight="700" fill={isFull || ts.checkedIn > 0 ? '#fff' : '#5A4F47'}>{ts.checkedIn}/{ts.guests}</text>
             </g>

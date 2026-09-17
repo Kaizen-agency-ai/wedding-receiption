@@ -86,7 +86,7 @@ insert into public.tables (id, name, capacity, label, sort_order) values
   ('31', 'Table 31', 10, '', 31),
   ('32', 'Table 32', 10, '', 32),
   ('33', 'Table 33', 10, '', 33),
-  ('33A', 'Table 33A', 10, '', 34),
+  ('33A', 'Table 33A', 10, 'HALAL', 34),
   ('R', 'Reserve', 10, 'Reserve Table', 35)
 on conflict (id) do nothing;
 
